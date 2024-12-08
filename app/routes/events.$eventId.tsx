@@ -1,28 +1,26 @@
-import { Form, useLoaderData, useFetcher } from "@remix-run/react";
-import { json } from "@remix-run/node";
-import { getEvent, updateEvent } from "../data";
+import { Favorite } from "~/components/Favorite";
+import { Form, useLoaderData } from "@remix-run/react";
+import { json, redirect } from "@remix-run/node";
 import invariant from "tiny-invariant";
-
+import { getEvent } from "../data";
+import { sessionStorage } from "~/services/session.server";
 // Type imports
-import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
-import type { FunctionComponent } from "react";
-import type { EventRecord } from "../data";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 
-export const loader = async ({ params }: LoaderFunctionArgs) => {
+export const loader = async ({ params, request }: LoaderFunctionArgs) => {
+  // check if user is logged in
+  const session = await sessionStorage.getSession(
+    request.headers.get("cookie")
+  );
+  const user = session.get("user");
+  if (!user) throw redirect("/login");
+
   invariant(params.eventId, "Missing eventId param");
   const event = await getEvent(params.eventId);
   if (!event) {
     throw new Response("Not Found", { status: 404 });
   }
   return json({ event });
-};
-
-export const action = async ({ params, request }: ActionFunctionArgs) => {
-  invariant(params.eventId, "Missing eventId param");
-  const formData = await request.formData();
-  return updateEvent(String(params.eventId), {
-    favorite: formData.get("favorite") === "true",
-  });
 };
 
 export default function Event() {
@@ -32,13 +30,7 @@ export default function Event() {
     <div id="event">
       <div>
         <h1>
-          {event.title ? (
-            <>
-              {event.title}
-            </>
-          ) : (
-            <i>No Name</i>
-          )}{" "}
+          {event.title ? <>{event.title}</> : <i>No Name</i>}{" "}
           <Favorite event={event} />
         </h1>
 
@@ -70,24 +62,3 @@ export default function Event() {
     </div>
   );
 }
-
-const Favorite: FunctionComponent<{
-  event: Pick<EventRecord, "favorite">;
-}> = ({ event }) => {
-  const fetcher = useFetcher();
-  const favorite = fetcher.formData
-    ? fetcher.formData.get("favorite") === "true"
-    : event.favorite;
-
-  return (
-    <fetcher.Form method="post">
-      <button
-        aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
-        name="favorite"
-        value={favorite ? "false" : "true"}
-      >
-        {favorite ? "★" : "☆"}
-      </button>
-    </fetcher.Form>
-  );
-};
