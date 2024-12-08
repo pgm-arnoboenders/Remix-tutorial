@@ -10,6 +10,7 @@ import {
   useNavigation,
   useSubmit,
   Link,
+  useNavigate,
 } from "@remix-run/react";
 import {
   LinksFunction,
@@ -51,6 +52,7 @@ export const action = async () => {
 export default function App() {
   const { events, search, user } = useLoaderData<typeof loader>();
   const navigation = useNavigation();
+  const navigate = useNavigate();
   const submit = useSubmit();
   const searching =
     navigation.location &&
@@ -122,9 +124,9 @@ export default function App() {
             )}
           </nav>
           {user ? (
-            <Link to="/logout">Logout</Link>
+            <button onClick={() => navigate("/logout")}>Logout</button>
           ) : (
-            <Link to="/login">Login</Link>
+            <button onClick={() => navigate("/login")}>Login</button>
           )}
         </div>
         <div

@@ -4,13 +4,14 @@ import { sessionStorage } from "~/services/session.server";
 
 export default function Logout() {
   const navigate = useNavigate();
-  const goBack = () => navigate(-1);
   return (
     <div>
       <h1>Are you sure you want to log out?</h1>
       <form method="post" className="flex justify-center align-center">
         <button type="submit">Yes</button>
-        <button type="button" onClick={goBack}>No</button>
+        <button type="button" onClick={() => navigate(-1)}>
+          No
+        </button>
       </form>
     </div>
   );
