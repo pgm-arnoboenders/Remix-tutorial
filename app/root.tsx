@@ -9,6 +9,7 @@ import {
   useLoaderData,
   useNavigation,
   useSubmit,
+  Link,
 } from "@remix-run/react";
 import {
   LinksFunction,
@@ -114,14 +115,17 @@ export default function App() {
               </p>
             )}
           </nav>
+          <Link to="/logout">logout</Link>
         </div>
         <div
           className={
             navigation.state === "loading" && !searching ? "loading" : ""
           }
           id="detail"
-        ><Outlet /></div>
-        
+        >
+          <Outlet />
+        </div>
+
         <ScrollRestoration />
         <Scripts />
       </body>
