@@ -20,6 +20,7 @@ import {
 import appStylesHref from "./app.css?url";
 import { createEmptyEvent, getEvents } from "./data";
 import { useEffect } from "react";
+import { sessionStorage } from "~/services/session.server";
 
 export const links: LinksFunction = () => {
   return [
@@ -31,10 +32,15 @@ export const links: LinksFunction = () => {
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const session = await sessionStorage.getSession(
+    request.headers.get("cookie")
+  );
+  const user = session.get("user");
+
   const url = new URL(request.url);
   const search = url.searchParams.get("q");
   const events = await getEvents(search);
-  return json({ events, search });
+  return json({ events, search, user });
 };
 
 export const action = async () => {
@@ -43,7 +49,7 @@ export const action = async () => {
 };
 
 export default function App() {
-  const { events, search } = useLoaderData<typeof loader>();
+  const { events, search, user } = useLoaderData<typeof loader>();
   const navigation = useNavigation();
   const submit = useSubmit();
   const searching =
@@ -115,7 +121,11 @@ export default function App() {
               </p>
             )}
           </nav>
-          <Link to="/logout">logout</Link>
+          {user ? (
+            <Link to="/logout">Logout</Link>
+          ) : (
+            <Link to="/login">Login</Link>
+          )}
         </div>
         <div
           className={
